@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id          String       @id @default(uuid())
+  nik         String       @unique
+  password    String
+  fullName    String
+  address     String?      @db.Text
+  phoneNumber String?
+  role        UserRole    @default(VOTER)
+  isVerified  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  votes       Vote[]
+  elections   Election[]  @relation("CreatedBy")
+  auditLogs   AuditLog[]
+
+  @@map("users")
+}
+
+// Election model
+model Election {
+  id          String       @id @default(uuid())
+  title       String
+  description String?      @db.Text
+  startDate   DateTime
+  endDate     DateTime
+  status      ElectionStatus @default(DRAFT)
+  createdById String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  createdBy   User        @relation("CreatedBy", fields: [createdById], references: [id])
+  candidates  Candidate[]
+  votes       Vote[]
+
+  @@map("elections")
+}
+
+// Candidate model
+model Candidate {
+  id              String    @id @default(uuid())
+  electionId      String
+  candidateNumber Int
+  name            String
+  vision          String?   @db.Text
+  mission         String?   @db.Text
+  photoUrl        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  election        Election  @relation(fields: [electionId], references: [id])
+  votes           Vote[]
+
+  @@unique([electionId, candidateNumber])
+  @@map("candidates")
+}
+
+// Vote model
+model Vote {
+  id              String    @id @default(uuid())
+  electionId      String
+  voterId         String
+  candidateId     String
+  blockchainHash  String
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  election        Election  @relation(fields: [electionId], references: [id])
+  voter           User      @relation(fields: [voterId], references: [id])
+  candidate       Candidate @relation(fields: [candidateId], references: [id])
+
+  @@unique([voterId, electionId])
+  @@map("votes")
+}
+
+// Audit Log model
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String?
+  action      String
+  description String?   @db.Text
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  VOTER
+  SUPERVISOR
+}
+
+enum ElectionStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
