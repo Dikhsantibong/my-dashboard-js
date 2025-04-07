@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -47,80 +44,79 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchStats = async () => {
+      try {
+        // TODO: Replace with actual API call
+        const response = await fetch('http://localhost:3001/admin/stats', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      }
+    };
+
     checkAuth();
-    // Fetch dashboard stats here in the future
+    fetchStats();
   }, []);
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              {/* Dashboard Stats Cards */}
-              <div className="grid gap-4 px-4 lg:px-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Pemilih</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalVoters}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pemilih Terverifikasi</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.verifiedVoters}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Kandidat</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalCandidates}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pemilihan Aktif</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.activeElections}</div>
-                  </CardContent>
-                </Card>
-              </div>
+    <div className="flex-1 space-y-4 p-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+      </div>
 
-              {/* Quick Actions */}
-              <div className="px-4 lg:px-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Aksi Cepat</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex gap-4">
-                    <Button variant="outline">Tambah Pemilihan</Button>
-                    <Button variant="outline">Verifikasi Pemilih</Button>
-                    <Button variant="outline">Kelola Kandidat</Button>
-                  </CardContent>
-                </Card>
-              </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Pemilih</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalVoters}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pemilih Terverifikasi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.verifiedVoters}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Kandidat</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalCandidates}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pemilihan Aktif</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeElections}</div>
+          </CardContent>
+        </Card>
+      </div>
 
-              {/* Recent Activities or Announcements can be added here */}
-            </div>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+      <Card>
+        <CardHeader>
+          <CardTitle>Aksi Cepat</CardTitle>
+        </CardHeader>
+        <CardContent className="flex gap-4">
+          <Button variant="outline">Tambah Pemilihan</Button>
+          <Button variant="outline">Verifikasi Pemilih</Button>
+          <Button variant="outline">Kelola Kandidat</Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -29,72 +29,68 @@ export function AppSidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-background border-r">
-      <div className="flex-1 overflow-y-auto">
-        <div className="space-y-4 py-4">
-          <div className="px-3 py-2">
-            <div className="space-y-1">
-              <h2 className="mb-4 px-4 text-xl font-semibold tracking-tight">
-                E-Voting Admin
-              </h2>
-              <nav className="space-y-2">
-                <Link href="/dashboard" passHref>
-                  <Button
-                    variant={pathname === "/dashboard" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                  >
-                    <HomeIcon className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link href="/dashboard/voters" passHref>
-                  <Button
-                    variant={pathname === "/dashboard/voters" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                  >
-                    <UsersIcon className="mr-2 h-4 w-4" />
-                    Kelola Pemilih
-                  </Button>
-                </Link>
-                <Link href="/dashboard/verification" passHref>
-                  <Button
-                    variant={pathname === "/dashboard/verification" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                  >
-                    <UserCheckIcon className="mr-2 h-4 w-4" />
-                    Verifikasi Pemilih
-                  </Button>
-                </Link>
-                <Link href="/dashboard/elections" passHref>
-                  <Button
-                    variant={pathname === "/dashboard/elections" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                  >
-                    <VoteIcon className="mr-2 h-4 w-4" />
-                    Kelola Pemilihan
-                  </Button>
-                </Link>
-                <Link href="/dashboard/results" passHref>
-                  <Button
-                    variant={pathname === "/dashboard/results" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                  >
-                    <ChartBarIcon className="mr-2 h-4 w-4" />
-                    Hasil Pemilihan
-                  </Button>
-                </Link>
-                <Link href="/dashboard/settings" passHref>
-                  <Button
-                    variant={pathname === "/dashboard/settings" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                  >
-                    <SettingsIcon className="mr-2 h-4 w-4" />
-                    Pengaturan
-                  </Button>
-                </Link>
-              </nav>
-            </div>
-          </div>
+    <div className="w-64 flex flex-col bg-background border-r">
+      <div className="flex-1 overflow-y-auto py-4">
+        <div className="px-3 py-2">
+          <h2 className="mb-4 px-4 text-xl font-semibold tracking-tight">
+            E-Voting Admin
+          </h2>
+          <nav className="space-y-2">
+            <Link href="/dashboard" passHref>
+              <Button
+                variant={pathname === "/dashboard" ? "default" : "ghost"}
+                className="w-full justify-start"
+              >
+                <HomeIcon className="mr-2 h-4 w-4" />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="/dashboard/voters" passHref>
+              <Button
+                variant={pathname === "/dashboard/voters" ? "default" : "ghost"}
+                className="w-full justify-start"
+              >
+                <UsersIcon className="mr-2 h-4 w-4" />
+                Kelola Pemilih
+              </Button>
+            </Link>
+            <Link href="/dashboard/verification" passHref>
+              <Button
+                variant={pathname === "/dashboard/verification" ? "default" : "ghost"}
+                className="w-full justify-start"
+              >
+                <UserCheckIcon className="mr-2 h-4 w-4" />
+                Verifikasi Pemilih
+              </Button>
+            </Link>
+            <Link href="/dashboard/elections" passHref>
+              <Button
+                variant={pathname === "/dashboard/elections" ? "default" : "ghost"}
+                className="w-full justify-start"
+              >
+                <VoteIcon className="mr-2 h-4 w-4" />
+                Kelola Pemilihan
+              </Button>
+            </Link>
+            <Link href="/dashboard/results" passHref>
+              <Button
+                variant={pathname === "/dashboard/results" ? "default" : "ghost"}
+                className="w-full justify-start"
+              >
+                <ChartBarIcon className="mr-2 h-4 w-4" />
+                Hasil Pemilihan
+              </Button>
+            </Link>
+            <Link href="/dashboard/settings" passHref>
+              <Button
+                variant={pathname === "/dashboard/settings" ? "default" : "ghost"}
+                className="w-full justify-start"
+              >
+                <SettingsIcon className="mr-2 h-4 w-4" />
+                Pengaturan
+              </Button>
+            </Link>
+          </nav>
         </div>
       </div>
       <div className="p-4 border-t">
