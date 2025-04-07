@@ -1,6 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -17,47 +22,77 @@ export class AuthService {
     phoneNumber?: string;
     address?: string;
   }) {
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    
-    const user = await this.prisma.user.create({
-      data: {
-        ...data,
-        password: hashedPassword,
-        role: 'VOTER', // Default role
-      },
-    });
+    try {
+      // Check if user already exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { nik: data.nik },
+      });
 
-    const { password, ...result } = user;
-    return result;
+      if (existingUser) {
+        throw new ConflictException('NIK sudah terdaftar');
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
+      // Create user
+      const user = await this.prisma.user.create({
+        data: {
+          ...data,
+          password: hashedPassword,
+        },
+      });
+
+      // Remove password from response
+      const { password: _, ...result } = user;
+      return result;
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      console.error('Registration error:', error);
+      throw new InternalServerErrorException('Gagal melakukan registrasi');
+    }
   }
 
   async login(nik: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { nik } });
-    
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    try {
+      // Find user
+      const user = await this.prisma.user.findUnique({
+        where: { nik },
+      });
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+      if (!user) {
+        throw new UnauthorizedException('NIK atau password salah');
+      }
 
-    const payload = { 
-      sub: user.id, 
-      nik: user.nik, 
-      role: user.role 
-    };
+      // Check password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('NIK atau password salah');
+      }
+
+      // Generate JWT token
+      const payload = {
+        sub: user.id,
         nik: user.nik,
-        fullName: user.fullName,
         role: user.role,
-      },
-    };
+      };
+
+      // Remove password from response
+      const { password: _, ...result } = user;
+
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+        user: result,
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      console.error('Login error:', error);
+      throw new InternalServerErrorException('Gagal melakukan login');
+    }
   }
-} 
+}
