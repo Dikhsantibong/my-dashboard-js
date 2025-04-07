@@ -63,8 +63,20 @@ export default function UserDashboard() {
   }, []); // Empty dependency array
 
   const handleLogout = () => {
-    localStorage.clear();
-    router.replace('/login');
+    try {
+      // Clear localStorage
+      localStorage.clear();
+      
+      // Clear cookies
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      
+      toast.success('Logout berhasil');
+      router.replace('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Terjadi kesalahan saat logout');
+    }
   };
 
   if (isLoading) {
@@ -103,9 +115,9 @@ export default function UserDashboard() {
           {/* Header */}
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">User Dashboard</h1>
-            <Link href="/">
-              <Button variant="outline">Kembali ke Beranda</Button>
-            </Link>
+            <Button variant="outline" onClick={() => router.push('/')}>
+              Kembali ke Beranda
+            </Button>
           </div>
 
           {/* User Information Card */}

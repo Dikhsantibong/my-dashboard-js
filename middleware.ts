@@ -1,68 +1,50 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-// This function can be marked `async` if using `await` inside
-export async function middleware(request: NextRequest) {
-  const token = request.cookies.get("token")?.value;
-  const path = request.nextUrl.pathname;
+export function middleware(request: NextRequest) {
+  // Get the pathname of the request (e.g. /, /protected, /admin)
+  const path = request.nextUrl.pathname
 
-  // Public routes that don't require authentication
-  if (path === "/login" || path === "/register") {
-    if (token) {
-      try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
+  // Public paths that don't require authentication
+  const isPublicPath = path === '/login' || path === '/register' || path === '/'
 
-        // If user is already logged in, redirect based on role
-        if (payload.role === "ADMIN") {
-          return NextResponse.redirect(new URL("/dashboard", request.url));
-        } else {
-          return NextResponse.redirect(new URL("/user-dashboard", request.url));
+  // Get the token from the cookies
+  const token = request.cookies.get('token')?.value || ''
+
+  // If the path is public and user is logged in, redirect to appropriate dashboard
+  if (isPublicPath && token) {
+    try {
+      // Try to get user data from localStorage (if available)
+      const userData = request.cookies.get('user')?.value
+      if (userData) {
+        const user = JSON.parse(decodeURIComponent(userData))
+        if (user.role === 'ADMIN') {
+          return NextResponse.redirect(new URL('/dashboard', request.url))
+        } else if (user.role === 'VOTER') {
+          return NextResponse.redirect(new URL('/user-dashboard', request.url))
         }
-      } catch {
-        // If token is invalid, remove it and continue to login/register
-        const response = NextResponse.next();
-        response.cookies.delete("token");
-        return response;
       }
+    } catch (error) {
+      // If there's an error parsing user data, continue with the request
+      console.error('Error parsing user data:', error)
     }
-    return NextResponse.next();
   }
 
-  // Protected routes
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // If the path requires authentication and user is not logged in
+  if (!isPublicPath && !token) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-
-    // Role-based route protection
-    if (path.startsWith("/dashboard") && payload.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/user-dashboard", request.url));
-    }
-
-    if (path.startsWith("/user-dashboard") && payload.role === "ADMIN") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-
-    return NextResponse.next();
-  } catch (error) {
-    // If token is invalid, redirect to login
-    const response = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.delete("token");
-    return response;
-  }
+  return NextResponse.next()
 }
 
-// See "Matching Paths" below to learn more
+// Configure which paths the middleware will run on
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/user-dashboard/:path*",
-    "/login",
-    "/register",
+    '/',
+    '/login',
+    '/register',
+    '/dashboard/:path*',
+    '/user-dashboard/:path*',
   ],
-};
+}

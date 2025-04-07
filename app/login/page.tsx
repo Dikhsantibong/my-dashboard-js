@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nik: "",
@@ -41,57 +39,27 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Login response:", data); // Debug log
-        
         // Store user data in localStorage
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        console.log("User role:", data.user.role); // Debug log
-        console.log("Stored user:", localStorage.getItem("user")); // Debug log
+        // Store user data in cookies as well
+        document.cookie = `token=${data.access_token}; path=/`;
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(data.user))}; path=/`;
 
         toast.success("Login berhasil!");
         
-        // Ensure localStorage is set before redirecting
-        try {
-          // Wait for localStorage to be set
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
-          // Double check that data was stored correctly
-          const storedUser = localStorage.getItem("user");
-          const storedToken = localStorage.getItem("token");
-          
-          if (!storedUser || !storedToken) {
-            throw new Error("Failed to store user data");
-          }
-
-          console.log("About to redirect user with role:", JSON.parse(storedUser).role); // Debug log
-
-          // Redirect based on role
+        // Handle redirection based on role
+        const redirectUser = () => {
           if (data.user.role === "ADMIN") {
-            console.log("Redirecting to admin dashboard"); // Debug log
-            router.replace("/dashboard");
+            window.location.href = "/dashboard";
           } else if (data.user.role === "VOTER") {
-            console.log("Redirecting to user dashboard"); // Debug log
-            // Try more forceful navigation approaches
-            try {
-              await router.replace("/user-dashboard");
-              // If router.replace doesn't work, try window.location
-              setTimeout(() => {
-                window.location.href = "/user-dashboard";
-              }, 100);
-            } catch (error) {
-              console.error("Navigation error:", error);
-              // Fallback to window.location
-              window.location.href = "/user-dashboard";
-            }
-          } else {
-            throw new Error("Invalid user role");
+            window.location.href = "/user-dashboard";
           }
-        } catch (error) {
-          console.error("Redirect error:", error);
-          toast.error("Terjadi kesalahan saat redirect. Silakan coba lagi.");
-        }
+        };
+
+        // Wait for localStorage and cookies to be set
+        setTimeout(redirectUser, 500);
       } else {
         toast.error(data.message || "Login gagal. Silakan coba lagi.");
       }
